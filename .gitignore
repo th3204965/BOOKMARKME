@@ -27,3 +27,6 @@ Thumbs.db
 
 # uv
 uv.lock
+
+# bookmark html files
+*.html
