@@ -1,0 +1,38 @@
+[project]
+name = "bookmarkme"
+version = "0.1.0"
+description = "AI-powered bookmark organizer using Gemini"
+readme = "README.md"
+authors = [
+    { name = "TahyrHussayn", email = "tahirhussain5112@gmail.com" },
+]
+requires-python = ">=3.12"
+dependencies = [
+    "google-genai>=1.0.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+    "rich>=13.0.0",
+    "typer>=0.15.0",
+]
+
+[project.scripts]
+bookmarkme = "bookmarkme.cli:app"
+
+[dependency-groups]
+dev = ["ruff>=0.11.0"]
+
+[build-system]
+requires = ["uv_build>=0.10.2,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "RUF"]
+ignore = ["B008"]  # Typer requires function calls in default args
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
