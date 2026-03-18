@@ -34,8 +34,7 @@ uv.lock
 .ruff_cache/
 
 # Bookmarks directory (user input/output bookmark files)
-bookmarks/*
-!bookmarks/.gitkeep
+bookmarks/
 
 # Root-level bookmark HTML files (legacy)
 /*.html
