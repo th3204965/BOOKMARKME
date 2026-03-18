@@ -82,8 +82,8 @@ uv run bookmarkme -i bookmarks/my_export.html -o bookmarks/my_organized.html
 ╭──────────────────────────────── 🎉 Done! ──────────────────────────────────╮
 │ Bookmarks organized successfully!                                          │
 │                                                                            │
-│ 📥 Input:  bookmarks/bookmarks.html (5.6 MB, 2148 bookmarks)                    │
-│ 📤 Output: bookmarks/bookmarks_organized.html (198.3 KB, 2117 bookmarks)        │
+│ 📥 Input:  bookmarks/bookmarks.html (5.6 MB, 2148 bookmarks)               │
+│ 📤 Output: bookmarks/bookmarks_organized.html (198.3 KB, 2117 bookmarks)   │
 │                                                                            │
 │ Import the output file into your browser to use the organized bookmarks.   │
 ╰────────────────────────────────────────────────────────────────────────────╯
@@ -111,17 +111,20 @@ Bookmarks are organized into these strict categories:
 
 ```
 bookmarkme/
-├── bookmarks/                 # ← Drop your bookmarks.html here
+├── bookmarks/            # Exported bookmarks (.html) go here
 │   └── .gitkeep
-├── src/bookmarkme/
-│   ├── __init__.py       # Package metadata
-│   ├── cli.py            # Typer CLI entry point
-│   ├── organizer.py      # Gemini API integration & batching
-│   └── parser.py         # HTML parsing, dedup & generation
+├── src/bookmarkme/       # Source code
+│   ├── __init__.py
+│   ├── cli.py            # CLI entry point
+│   ├── organizer.py      # Gemini integration
+│   └── parser.py         # HTML parsing & generation
 ├── .env.example          # API key template
-├── .gitignore
-├── pyproject.toml        # Project config & dependencies
-└── README.md
+├── .gitignore            # Git ignore rules (ignores __pycache__, etc.)
+├── .python-version       # Python version requirement
+├── LICENSE               # MIT License
+├── pyproject.toml        # Project configuration & dependencies
+├── uv.lock               # Exact dependency lockfile
+└── README.md             # Project documentation
 ```
 
 ## Tech Stack
@@ -135,4 +138,4 @@ bookmarkme/
 
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE).
