@@ -11,7 +11,9 @@ wheels/
 
 # Environment variables
 .env
-.env.*
+.env.production
+.env.development
+.env.test
 
 # IDE
 .vscode/

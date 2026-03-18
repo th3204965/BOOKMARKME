@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 import typer
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 
@@ -51,7 +52,7 @@ def organize(
         None,
         "--api-key",
         "-k",
-        help="Google AI API key. Defaults to GEMINI_API_KEY env var.",
+        help="Google AI API key. Defaults to GEMINI_API_KEY from .env or environment.",
     ),
 ) -> None:
     """Organize and beautify an HTML bookmark file using Gemini AI.
@@ -59,7 +60,10 @@ def organize(
     Reads your exported bookmarks, sends them to Gemini for intelligent
     reorganization, and generates a clean HTML file ready to re-import.
     """
-    # Resolve API key
+    # Load .env file (if present)
+    load_dotenv()
+
+    # Resolve API key: --api-key flag > .env / environment variable
     resolved_key = api_key or os.environ.get("GEMINI_API_KEY")
     if not resolved_key:
         console.print(
