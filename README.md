@@ -1,89 +1,138 @@
 # 🔖 BookmarkMe
 
-**AI-powered bookmark organizer** — beautify and reorganize your browser bookmarks using Google Gemini.
+AI-powered bookmark organizer — beautify and reorganize your browser bookmarks with Google Gemini.
 
-BookmarkMe takes your messy HTML bookmark export (from Chrome, Firefox, Edge, etc.), sends it to Gemini for intelligent reorganization, and generates a clean, categorized bookmark file ready to re-import.
+## What It Does
 
-## ✨ Features
+BookmarkMe takes your exported browser bookmarks (a Netscape HTML file) and uses the Gemini API to intelligently categorize them into clean, organized folders — ready to re-import into any browser or bookmark manager like [Raindrop.io](https://raindrop.io).
 
-- 🧠 **AI-powered categorization** — Gemini groups bookmarks into logical folders
-- 🧹 **Deduplication** — Removes duplicate bookmarks automatically
-- ✏️ **Title cleanup** — Fixes garbled or unhelpful bookmark titles
-- 🔤 **Alphabetical sorting** — Bookmarks sorted within each folder
-- 📂 **Browser-compatible output** — Generates standard Netscape Bookmark HTML
+### Features
 
-## 🚀 Quick Start
+- **AI Categorization** — Gemini classifies each bookmark into one of 11 strict categories (Development, Design, Entertainment, etc.)
+- **Strict Deduplication** — Removes duplicate bookmarks by normalizing URLs (strips `www.`, trailing slashes, `utm_` tracking params, and matches `http`/`https`)
+- **Concurrent Processing** — Splits bookmarks into batches and sends them to Gemini in parallel for fast processing
+- **Structured Outputs** — Uses Pydantic schemas with Gemini's structured output mode to guarantee valid, parseable responses every time
+- **Progress Bar** — Real-time CLI progress tracking with Rich
+- **Clean Output** — Strips bloat (favicons, timestamps, metadata) and outputs a minimal, importable HTML file
 
-### Prerequisites
+## Installation
 
-- Python 3.12+
-- [uv](https://docs.astral.sh/uv/) (Python package manager)
-- A [Google AI API key](https://aistudio.google.com)
-
-### Setup
+Requires **Python 3.12+** and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-# Clone the repo
-git clone <your-repo-url>
+# Clone the repository
+git clone https://github.com/TahyrHussayn/bookmarkme.git
 cd bookmarkme
 
 # Install dependencies
 uv sync
-
-# Set your API key
-export GEMINI_API_KEY="your-api-key-here"
 ```
 
-### Usage
+## Setup
+
+1. Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com)
+2. Create a `.env` file:
 
 ```bash
-# Organize bookmarks
-uv run bookmarkme organize --input bookmarks.html --output organized.html
-
-# Use a different model
-uv run bookmarkme organize --input bookmarks.html --model gemini-3-flash
-
-# Pass API key directly
-uv run bookmarkme organize --input bookmarks.html --api-key "your-key"
-
-# Get help
-uv run bookmarkme --help
+cp .env.example .env
+# Edit .env and add your key
 ```
 
-### How to Export Bookmarks
+```env
+GEMINI_API_KEY=your_api_key_here
+```
 
-1. **Chrome**: `chrome://bookmarks` → ⋮ → Export bookmarks
-2. **Firefox**: Bookmarks → Manage Bookmarks → Import and Backup → Export Bookmarks to HTML
-3. **Edge**: `edge://favorites` → ⋮ → Export favorites
+## Usage
 
-## 🛠️ Development
+1. Export your bookmarks from Chrome/Firefox/Safari as an HTML file.
+2. Place the exported file in the `bookmarks/` directory (as `bookmarks.html`).
+3. Run:
 
 ```bash
-# Install dev dependencies
-uv sync --group dev
-
-# Lint
-uv run ruff check .
-
-# Format
-uv run ruff format .
+uv run bookmarkme
 ```
 
-## 📦 Project Structure
+The organized output will be written to `bookmarks/bookmarks_organized.html` — ready to re-import.
+
+You can also specify custom paths:
+
+```bash
+uv run bookmarkme -i bookmarks/my_export.html -o bookmarks/my_organized.html
+```
+
+### Options
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--input` | `-i` | Path to the HTML bookmark file | `bookmarks/bookmarks.html` |
+| `--output` | `-o` | Path for the organized output | `bookmarks/bookmarks_organized.html` |
+| `--model` | `-m` | Gemini model to use | `gemini-2.5-pro` |
+| `--api-key` | `-k` | API key (overrides `.env`) | `GEMINI_API_KEY` env var |
+
+### Example Output
+
+```
+📂 Reading bookmarks from: bookmarks/bookmarks.html
+✅ Found 2148 bookmarks
+
+📚 Deduplicated: 2148 → 2117 unique bookmarks.
+🚀 Sending 22 batches of 100 bookmarks to gemini-2.5-pro concurrently...
+  Categorizing bookmarks... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+✅ Reorganized completely! Final count: 2117 bookmarks
+╭──────────────────────────────── 🎉 Done! ──────────────────────────────────╮
+│ Bookmarks organized successfully!                                          │
+│                                                                            │
+│ 📥 Input:  bookmarks/bookmarks.html (5.6 MB, 2148 bookmarks)                    │
+│ 📤 Output: bookmarks/bookmarks_organized.html (198.3 KB, 2117 bookmarks)        │
+│                                                                            │
+│ Import the output file into your browser to use the organized bookmarks.   │
+╰────────────────────────────────────────────────────────────────────────────╯
+```
+
+## Categories
+
+Bookmarks are organized into these strict categories:
+
+| Category | Examples |
+|----------|----------|
+| **Development** | GitHub, Stack Overflow, API docs |
+| **Design** | Figma, Dribbble, UI kits |
+| **Social Media** | Twitter, LinkedIn, Reddit |
+| **News & Media** | CNN, TechCrunch, The Verge |
+| **Entertainment** | YouTube, Spotify, Steam |
+| **Education & Learning** | Coursera, MDN, tutorials |
+| **Shopping & Finance** | Amazon, banking, crypto |
+| **Productivity & Tools** | Notion, Trello, Gmail |
+| **Reference & Research** | Wikipedia, papers, docs |
+| **Personal** | Personal blogs, portfolios |
+| **Other** | Everything else |
+
+## Project Structure
 
 ```
 bookmarkme/
+├── bookmarks/                 # ← Drop your bookmarks.html here
+│   └── .gitkeep
 ├── src/bookmarkme/
-│   ├── __init__.py      # Package metadata
-│   ├── cli.py           # Typer CLI entry point
-│   ├── organizer.py     # Gemini API integration
-│   └── parser.py        # HTML ↔ JSON bookmark parsing
-├── tests/
-│   └── sample_bookmarks.html
-├── pyproject.toml       # Project config (uv, ruff)
+│   ├── __init__.py       # Package metadata
+│   ├── cli.py            # Typer CLI entry point
+│   ├── organizer.py      # Gemini API integration & batching
+│   └── parser.py         # HTML parsing, dedup & generation
+├── .env.example          # API key template
+├── .gitignore
+├── pyproject.toml        # Project config & dependencies
 └── README.md
 ```
 
-## 📄 License
+## Tech Stack
+
+- **[uv](https://docs.astral.sh/uv/)** — Package management
+- **[Typer](https://typer.tiangolo.com/)** — CLI framework
+- **[Rich](https://rich.readthedocs.io/)** — Terminal UI & progress bars
+- **[Google GenAI](https://ai.google.dev/)** — Gemini API client
+- **[Pydantic](https://docs.pydantic.dev/)** — Structured output schemas
+- **[Ruff](https://docs.astral.sh/ruff/)** — Linting & formatting
+
+## License
 
 MIT

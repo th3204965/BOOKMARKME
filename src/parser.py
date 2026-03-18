@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import json
 import re
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 
 def parse_bookmarks(html: str) -> dict[str, Any]:
@@ -99,16 +99,6 @@ def _unescape(text: str) -> str:
     )
 
 
-def bookmarks_to_json(bookmarks: dict[str, Any]) -> str:
-    """Convert parsed bookmark structure to a JSON string for the AI model."""
-    return json.dumps(bookmarks, indent=2, ensure_ascii=False)
-
-
-def json_to_bookmarks(json_str: str) -> dict[str, Any]:
-    """Parse a JSON string back into a bookmark structure."""
-    return json.loads(json_str)
-
-
 def generate_bookmarks_html(bookmarks: dict[str, Any]) -> str:
     """Generate a valid Netscape Bookmark HTML file from a bookmark structure.
 
@@ -166,3 +156,59 @@ def count_bookmarks(bookmarks: dict[str, Any]) -> int:
         elif child.get("type") == "folder":
             count += count_bookmarks(child)
     return count
+
+
+def _normalize_url(url: str) -> str:
+    """Normalize a URL for stricter deduplication.
+
+    Removes scheme (http/https), www prefix, trailing slashes, and utm_ parameters.
+    """
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return url.lower().rstrip("/")
+
+    netloc = parsed.netloc.lower()
+    if netloc.startswith("www."):
+        netloc = netloc[4:]
+
+    if parsed.query:
+        query_params = parse_qsl(parsed.query, keep_blank_values=True)
+        filtered_params = [(k, v) for k, v in query_params if not k.startswith("utm_")]
+        new_query = urlencode(filtered_params)
+    else:
+        new_query = ""
+
+    path = parsed.path.rstrip("/")
+    # Reconstruct without scheme to match http and https identical URLs
+    normalized = urlunparse(("", netloc, path, parsed.params, new_query, ""))
+    return normalized
+
+
+def extract_and_deduplicate_bookmarks(bookmarks: dict[str, Any]) -> list[dict[str, str]]:
+    """Flatten the bookmark structure and remove duplicates by URL."""
+    seen_urls: set[str] = set()
+    flat_bookmarks: list[dict[str, str]] = []
+
+    def _traverse(node: dict[str, Any]) -> None:
+        if node.get("type") == "bookmark":
+            url = node.get("url", "")
+            if url and url.startswith("http"):
+                local_patterns = ("localhost", "127.0.0.1", "192.168.", "10.0.0.")
+                if not any(pattern in url for pattern in local_patterns):
+                    norm_url = _normalize_url(url)
+                    if norm_url not in seen_urls:
+                        seen_urls.add(norm_url)
+                        # Keep original title and url
+                        flat_bookmarks.append(
+                            {
+                                "title": node.get("title", "Untitled"),
+                                "url": url,
+                                "type": "bookmark",
+                            }
+                        )
+        for child in node.get("children", []):
+            _traverse(child)
+
+    _traverse(bookmarks)
+    return flat_bookmarks

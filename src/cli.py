@@ -23,13 +23,14 @@ app = typer.Typer(
     help="🔖 AI-powered bookmark organizer — beautify and reorganize your bookmarks with Gemini.",
     add_completion=False,
     rich_markup_mode="rich",
+    invoke_without_command=True,
 )
 
 
-@app.command()
+@app.callback(invoke_without_command=True)
 def organize(
     input_file: Path = typer.Option(
-        ...,
+        Path("bookmarks/bookmarks.html"),
         "--input",
         "-i",
         help="Path to the HTML bookmark file to organize.",
@@ -37,13 +38,13 @@ def organize(
         readable=True,
     ),
     output_file: Path = typer.Option(
-        Path("bookmarks_organized.html"),
+        Path("bookmarks/bookmarks_organized.html"),
         "--output",
         "-o",
         help="Path for the organized bookmark HTML output.",
     ),
     model: str = typer.Option(
-        "gemini-3.1-pro",
+        "gemini-2.5-pro",
         "--model",
         "-m",
         help="Gemini model to use for organization.",
@@ -116,12 +117,22 @@ def organize(
         console.print(f"[bold red]❌ Failed to write output file: {e}[/bold red]")
         raise typer.Exit(code=1) from e
 
+    def format_size(size: int) -> str:
+        if size < 1024:
+            return f"{size} B"
+        elif size < 1024 * 1024:
+            return f"{size / 1024:.1f} KB"
+        return f"{size / (1024 * 1024):.1f} MB"
+
+    in_size = format_size(input_file.stat().st_size)
+    out_size = format_size(output_file.stat().st_size)
+
     organized_count = count_bookmarks(organized)
     console.print(
         Panel(
             f"[bold green]Bookmarks organized successfully![/bold green]\n\n"
-            f"📥 Input:  {input_file} ({bookmark_count} bookmarks)\n"
-            f"📤 Output: {output_file} ({organized_count} bookmarks)\n\n"
+            f"📥 Input:  {input_file} ({in_size}, {bookmark_count} bookmarks)\n"
+            f"📤 Output: {output_file} ({out_size}, {organized_count} bookmarks)\n\n"
             f"Import the output file into your browser to use the organized bookmarks.",
             title="🎉 Done!",
             border_style="green",

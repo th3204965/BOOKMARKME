@@ -14,12 +14,14 @@ wheels/
 .env.production
 .env.development
 .env.test
+.env.local
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
@@ -28,5 +30,12 @@ Thumbs.db
 # uv
 uv.lock
 
-# bookmark html files
-*.html
+# Ruff
+.ruff_cache/
+
+# Bookmarks directory (user input/output bookmark files)
+bookmarks/*
+!bookmarks/.gitkeep
+
+# Root-level bookmark HTML files (legacy)
+/*.html
