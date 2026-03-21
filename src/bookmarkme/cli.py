@@ -55,6 +55,11 @@ def organize(
         "-k",
         help="Google AI API key. Defaults to GEMINI_API_KEY from .env or environment.",
     ),
+    no_cache: bool = typer.Option(
+        False,
+        "--no-cache",
+        help="Bypass the local category cache and re-categorize all bookmarks.",
+    ),
 ) -> None:
     """Organize and beautify an HTML bookmark file using Gemini AI.
 
@@ -100,7 +105,7 @@ def organize(
 
     # Organize with Gemini
     try:
-        organized = organize_bookmarks(bookmarks, resolved_key, model)
+        organized = organize_bookmarks(bookmarks, resolved_key, model, use_cache=not no_cache)
     except (ValueError, RuntimeError) as e:
         console.print(f"\n[bold red]❌ Organization failed: {e}[/bold red]")
         raise typer.Exit(code=1) from e
@@ -139,11 +144,3 @@ def organize(
         )
     )
 
-
-def main() -> None:
-    """Entry point."""
-    app()
-
-
-if __name__ == "__main__":
-    main()

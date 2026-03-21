@@ -12,6 +12,8 @@ BookmarkMe takes your exported browser bookmarks (a Netscape HTML file) and uses
 - **Strict Deduplication** — Removes duplicate bookmarks by normalizing URLs (strips `www.`, trailing slashes, `utm_` tracking params, and matches `http`/`https`)
 - **Concurrent Processing** — Splits bookmarks into batches and sends them to Gemini in parallel for fast processing
 - **Structured Outputs** — Uses Pydantic schemas with Gemini's structured output mode to guarantee valid, parseable responses every time
+- **Local Caching** — Caches URL→category mappings locally so re-runs only process new bookmarks (near-instant for unchanged sets)
+- **Automatic Retries** — Exponential backoff (up to 3 attempts) for failed API calls, so transient errors don't silently drop bookmarks
 - **Progress Bar** — Real-time CLI progress tracking with Rich
 - **Clean Output** — Strips bloat (favicons, timestamps, metadata) and outputs a minimal, importable HTML file
 
@@ -68,6 +70,7 @@ uv run bookmarkme -i bookmarks/my_export.html -o bookmarks/my_organized.html
 | `--output` | `-o` | Path for the organized output | `bookmarks/bookmarks_organized.html` |
 | `--model` | `-m` | Gemini model to use | `gemini-2.5-pro` |
 | `--api-key` | `-k` | API key (overrides `.env`) | `GEMINI_API_KEY` env var |
+| `--no-cache` | | Bypass local cache and re-categorize all bookmarks | `False` |
 
 ### Example Output
 
@@ -115,8 +118,9 @@ bookmarkme/
 │   └── .gitkeep
 ├── src/bookmarkme/       # Source code
 │   ├── __init__.py
+│   ├── cache.py          # Local URL→category cache
 │   ├── cli.py            # CLI entry point
-│   ├── organizer.py      # Gemini integration
+│   ├── organizer.py      # Gemini integration & retry logic
 │   └── parser.py         # HTML parsing & generation
 ├── .env.example          # API key template
 ├── .gitignore            # Git ignore rules (ignores __pycache__, etc.)
